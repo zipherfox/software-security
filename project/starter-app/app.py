@@ -126,7 +126,7 @@ def login():
     password = request.form.get("password") or (request.json or {}).get("password")
     con = db()
     row = con.execute("SELECT * FROM users WHERE username = ? AND password = ?",(
-        username, hashlib.md5((password or "").encode()).hexdigesst())).fetchone()
+        username, hashlib.md5((password or "").encode()).hexdigest())).fetchone()
     con.close()
     if not row:
         return "login failed", 401
