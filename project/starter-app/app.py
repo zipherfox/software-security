@@ -34,8 +34,8 @@ def team_marker():
 
 
 PAGE = """
-<!doctype html><title>NoteVault</title>
-<h1>NoteVault</h1>
+<!doctype html><title>NoteVault is updated!</title>
+<h1>NoteVault is updated?</h1>
 {% if user %}<p>Signed in as <b>{{ user }}</b> · <a href="/logout">logout</a>
   {% if is_admin %}· <a href="/admin">admin</a>{% endif %}</p>
 <form method=post action="/notes"><input name=title placeholder=title>
@@ -159,11 +159,17 @@ def add_note():
 
 @app.route("/api/notes/<int:nid>")
 def api_note(nid):
-    if not current_user():
+    user = current_user()
+    if not user:
         return jsonify(error="auth required"), 401
+
     con = db()
-    r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
+    r = con.execute(
+        "SELECT id, owner, title, body FROM notes WHERE id = ? AND owner = ?",
+        (nid, user)
+    ).fetchone()
     con.close()
+
     return (jsonify(dict(r)) if r else (jsonify(error="not found"), 404))
 
 
