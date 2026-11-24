@@ -2,12 +2,15 @@
 marp: true
 theme: default
 paginate: true
-header: "Software Security · Week 11"
+header: "Software Security 2 · 02005094 · Week 11"
 ---
+
+<!-- Current KOSEN class: 150 minutes = quiz/review10 + brief15 + shared practical100 + debrief20 + capture5. Full deck is pre-class/reference; select only the short live explanation. Both versions: common60 plus Conventional40 OR AIR20/10/10. Viva verifies existing work, no extra score or automatic-zero gate. -->
+
 
 # Week 11
 ## Memory-Safety & Exploitation
-Software Security · Nutthakorn Chalaemwongwan
+Software Security 2 · Tuesday 12 January 2027, 09:05–11:50
 
 <!-- Hook: feed random bytes to a C program until it crashes, then turn that crash into "execute my code." This week is the closest to classic hacking — and to why the world is moving to Rust. ~2 min. -->
 
@@ -68,7 +71,7 @@ stack-frame
 
 ## The four bug classes, side by side
 
-![The four memory-safety weakness classes present in this week's vuln.c, as a classification (not an exploitation guide): CWE-121 stack-based buffer overflow (writing past a fixed char buf[] overruns adjacent stack memory), CWE-787 out-of-bounds write (the umbrella class, of which CWE-121 is the stack case), CWE-134 use of an externally-controlled format string (printf(user) instead of printf("%s", user) lets input read or corrupt memory), and CWE-242 use of an inherently dangerous function (gets(), which cannot be used safely and was removed from C11). Footnote: this binary has no use-after-free and no off-by-one — real classes, just not in this code.](img/memory-bug-classes.svg)
+![The four memory-safety weakness classes present in this week's vuln.c, as a classification (not an exploitation guide): CWE-121 stack-based buffer overflow (writing past a fixed char buffer overruns adjacent stack memory), CWE-787 out-of-bounds write (the umbrella class, of which CWE-121 is the stack case), CWE-134 use of an externally-controlled format string (printf(user) instead of printf("%s", user) lets input read or corrupt memory), and CWE-242 use of an inherently dangerous function (gets(), which cannot be used safely and was removed from C11). Footnote: this binary has no use-after-free and no off-by-one — real classes, just not in this code.](img/memory-bug-classes.svg)
 
 <!-- The four classes as cards — each is a weakness definition (what it IS), not a how-to. Point out CWE-121 is the stack case of the CWE-787 umbrella, and that gets() (CWE-242) is so unsafe it was removed from the C standard. Keep the UAF/off-by-one footnote honest — those aren't in this binary. ~1 min. -->
 
@@ -78,11 +81,11 @@ stack-frame
 
 ```bash
 clang -g -fsanitize=address,fuzzer fuzz_harness.c -o fuzz && ./fuzz   # libFuzzer
-afl-fuzz -i seeds -o out -- ./vuln @@                                  # AFL++
 ```
 
 - Coverage-guided mutation finds crashes fast
 - Pair with sanitizers (ASan) for root cause
+- The toolbox has libFuzzer, not AFL++ — one fuzzer is plenty for this lab
 
 ![Coverage-guided fuzzing as a feedback loop. The top row runs seed corpus → mutate (flip/splice bytes) → run target → "what happened?", which asks two questions. First: did the input reach NEW code? If yes it's kept and added to the corpus, and a dashed arrow feeds back to mutate — this is the coverage-guided loop that lets the fuzzer learn its way to deep bugs instead of guessing blindly. Second: did it crash? If yes, AddressSanitizer turns a silent memory corruption into a precise report naming the faulting line, and the crashing input is minimized and saved as crash-<hash>. Two notes: coverage guidance reaches bugs a random generator never would, and ASan turns a mystery segfault into an actionable root cause. This is round 1 of the lab — finding the crash, not exploiting it.](img/fuzz-loop.svg)
 
@@ -92,7 +95,7 @@ afl-fuzz -i seeds -o out -- ./vuln @@                                  # AFL++
 
 ## Exploiting a stack overflow
 
-1. Find offset to return address with a **cyclic pattern** — verify it, don't assume it: this build's offset is 72 bytes, but enabling the stack canary alone moves it to 80 (the canary word sits between buffer and return address)
+1. Measure the return-address offset in the issued binary: use a **cyclic pattern** with a working debugger, or disassembly plus a successful exploit control if ptrace fails under emulation. Do not assume 72 bytes applies to another build.
 2. Overwrite RA → jump to `win()`
 3. Format string: `%x%x%x` leak, `%n` write
 
@@ -106,7 +109,7 @@ afl-fuzz -i seeds -o out -- ./vuln @@                                  # AFL++
 - **Stack canaries** — detect overwrite at function return, *after* the copy already happened
 - **ASLR** / **PIE** — randomize addresses
 - **NX/DEP** — blocks executing shellcode planted *on the stack* — irrelevant to this exploit, which returns into existing code (`win()`), never injects shellcode
-- On **this lab's hardened build, FORTIFY fires first** — `*** buffer overflow detected ***: terminated`. The canary never gets a chance to speak. Verify the order yourself before teaching it as "canary catches it" — that's the wrong answer this lab's own materials were rewritten to correct.
+- On **this lab's hardened build, FORTIFY fires first** — `*** buffer overflow detected ***: terminated`. The canary never gets a chance to run. Check this yourself in Task 3: it is FORTIFY, not the canary, that stops the payload.
 
 <!-- THE key correction this slide needed: FORTIFY_SOURCE checks at the copy call, before the function even returns — so on the hardened build it always wins the race against the canary, which only checks at return time. This lab's own interactive sim literally calls "the canary detects it" the week's most reliable wrong answer — don't teach it. NX is a real mitigation but not for THIS exploit (ret2win, no injected shellcode) — say so explicitly rather than implying all four defenses equally harden the one attack just demonstrated. Worksheet Q4 grades naming all four (canary/PIE/NX/FORTIFY) + what each defeats — FORTIFY must be on this slide. ~5 min. -->
 
@@ -122,43 +125,43 @@ afl-fuzz -i seeds -o out -- ./vuln @@                                  # AFL++
 
 ## The real fix: memory-safe languages
 
-- **Rust / Go** remove whole bug classes by design
+- Safe Rust and managed Go code prevent the unchecked memory writes shown here; unsafe/native boundaries need separate review
 - CISA "Secure by Design" + ONCD: move off C/C++ for new code
-- Borrow checker / bounds checks = no overflow, no UAF
+- Rust borrow checking and bounds checks, or Go runtime checks, prevent this C-style unchecked buffer write
 
-![Two columns contrasting how C/C++ and memory-safe languages treat the same bug family. In C/C++ you manage memory by hand with no automatic checks, so a whole family is possible — buffer overflow (CWE-121), out-of-bounds write (CWE-787), use-after-free, format string (CWE-134) — and the mitigations (canary, ASLR, PIE, NX, FORTIFY) only raise the cost of exploiting the bug while the bug still compiles and ships, a treadmill where the class never goes away. In Rust/Go the language manages memory for you: the borrow checker enforces lifetimes and arrays are bounds-checked, so an overflow or use-after-free becomes a compile error or a safe panic — the class is removed, not patched, because the unsafe write never reaches the machine. Mitigations are a treadmill; a memory-safe language ends the race, which is why CISA Secure by Design and the US ONCD both call for moving off C/C++ for new code.](img/memory-safe-languages.svg)
+![Comparison of C/C++ unchecked memory operations with safe Rust and managed Go code. The C lab's unchecked copy can overwrite the stack; canaries, ASLR, PIE, NX and FORTIFY can detect or impede exploitation without removing that source bug. Safe Rust uses ownership and bounds checks; Go uses managed memory and bounds checks. These prevent the shown unchecked write in their safe-code scope. Unsafe Rust, native interfaces, logic flaws, panics and resource errors remain separate risks.](img/memory-safe-languages.svg)
 
-<!-- The thesis of the week. Mitigations are a treadmill; memory-safe languages END the bug class. Rust's borrow checker makes UAF a compile error, not a CVE. This is exactly where industry + government are steering. ~4 min. -->
+<!-- The thesis of the week. Explain what safe Rust prevents in this counting task, then name the boundary: unsafe blocks, native interfaces and input/resource errors are not removed by choosing a language. Go has garbage collection and runtime bounds checks, not Rust's borrow checker. ~4 min. -->
 
 ---
 
 ## 💥 Game — Fuzzing Race → Pwn the Binary
 
-1. **Round 1 (Fuzzing Race):** first team to crash the target wins
+1. **Round 1 (Fuzzing Race):** who crashes the target first? (everyone submits their own evidence)
 2. **Round 2 (Pwn):** exploit the overflow / format string
-3. **Round 3 (Defend):** rebuild with canary+ASLR+PIE, then **rewrite in Rust**
+3. **Round 3 (Defend):** test the supplied hardened build, then implement the bounded safe counting function in `student_safe.rs`; a full rewrite is extension practice
 
-<!-- Explain the 3 rounds before lab. Round 1 = instant feedback (it crashes or not). Round 3 (defend + Rust rewrite) is graded and the real lesson. The weekly quiz no longer asks for the crashing input/defense/flag (dropped — quiz runs before the lab) — that's required in the worksheet instead. ~3 min. -->
+<!-- Explain the 3 rounds before lab. Round 1 = reproducible crash. Round 2 = measured ret2win in the isolated toolbox. Round 3 = hardened control plus student-authored Rust counting function. If ptrace fails under emulation, accept disassembly with the actual binary and exploit control. The weekly quiz runs before the lab; capture these results in the worksheet. ~3 min. -->
 
 ---
 
 ## Deliverable
 
-> 📋 **Worksheet 11** — `labs/week11-memory-safety-exploitation/worksheet.md` (Part 3) · **kickoff:** in the **toolbox container** (`labs/toolbox` — Apple clang has no libFuzzer runtime): `clang -g -fsanitize=address,fuzzer fuzz_harness.c -o fuzz && ./fuzz`
+> 📋 **Worksheet 11** — `labs/week11-memory-safety-exploitation/worksheet.md` · follow the 100-minute core run sheet.
 
-- Fuzzing crash + exploit script
-- Annotated Ghidra/gdb analysis
-- Memory-safe (Rust) rewrite + why the bug is now impossible
-- **+ Audit the AI / EiPE / Prompt Problem** (see worksheet)
+- Seeded fuzz/replay and measured ret2win evidence from the issued isolated toolchain
+- Hardened-build control and its actual observed failure mode
+- Your `student_safe.rs` counting change plus `python3 check_student.py` controls; state memory-safety/input-error limitations
+- **Assigned written version only:** Conventional Part 2/4 (20/20) or AIR Audit/EiPE/Prompt (20/10/10), after the shared practical 60.
 
-<!-- The Rust rewrite + "why it's now impossible" is the key deliverable — it proves they understand the cure, not just the exploit. AI-resilient tasks count. -->
+<!-- No promise that safe Rust can never panic or reject input. Measure the actual architecture/build, and do not execute vulnerable binaries on the host. -->
 
 ---
 
 ## Key takeaways
 
 - Fuzz to find, debug to understand, mitigate to slow attackers
-- Mitigations ≠ cure — memory-safe languages are the cure
+- Mitigations raise exploit cost; safe memory handling removes this unchecked-write path
 - This is where the industry is moving
 
 <!-- Recap. Cold-call: "why aren't stack canaries enough?" (they detect, don't prevent; bypassable via leaks — the cure is memory safety). ~2 min. -->
@@ -169,3 +172,15 @@ afl-fuzz -i seeds -o out -- ./vuln @@                                  # AFL++
 Next week: Software supply-chain security
 
 <!-- Cliffhanger: "Next week — one poisoned dependency owns thousands of victims; we'll replay xz and SolarWinds-style attacks." -->
+
+
+---
+
+## This week's hand-in
+
+- **Class:** Tuesday 12 January 2027, 09:05–11:50 (150 minutes): quiz 10 + explanation/demo 15 + practical 100 + debrief 20 + evidence 5
+- **Everyone (60 points):** fuzz and replay a crash, measure and try ret2win, run the hardened build, complete `count_chars()` in `student_safe.rs` and show the checker before and after, and explain the evidence
+- **This week odd ID = AIR-Sec** (Audit-the-AI 20 + EiPE 10 + Prompt 10) · **even ID = Conventional** (Part 2 + Part 4, 40)
+- **Code link:** commit `student_safe.rs` to branch `wk11` in your fork
+- **Due:** Monday 18 January 2027, 23:59 · worksheet PDF to learn.zcr.ai/submit
+- Run the C programs only inside the toolbox container; the demo `FLAG{...}` is the same for everyone and nothing goes to ctf.zcr.ai

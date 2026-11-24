@@ -1,30 +1,50 @@
-# Week 7 — Mock CTF (Midterm dry-run)
+# Week 7 — Two practice checkpoints
 
-**Covers:** Weeks 1–6 · **Format:** same as the Week 9 midterm practical · **Ungraded** (participation).
-**Time:** ~150 min of challenges — about 75 min in class, finish the rest at home (it is ungraded practice) · individual or pairs · Sandbox targets only (ethics policy applies).
+**02005094 · practice only · 70 minutes of the 150-minute review class (Tuesday 15 December, 09:05–11:50).** You redo the Week 4 and Week 6 patch tasks from a fresh, untouched copy. Nothing is submitted and nothing is marked. Your own Week 4 and Week 6 work stays exactly as it is.
 
-> This is practice — **hints are included** and solutions point back to the labs. No real
-> exam flags here. Goal: get comfortable with the format so Week 9 has no surprises.
+## Before you start: make a practice copy
 
-![A revision map of weeks 1 to 6: each week's core idea and OWASP/CWE tag, arranged so untrusted input crosses a trust boundary and the week's control sits at the crossing](img/revision-map.svg)
+You already finished these files in Weeks 4 and 6, so their checks would pass straight away. Make a separate practice copy of the untouched starters instead. This does not change your real lab folders or your `wk04`/`wk06` branches. On Windows, type these in the Ubuntu app:
 
-**Targets:** `labs/week03-cryptography`, `labs/week04-injection`, `labs/week05-xss-client-side`,
-`labs/week06-authn-authz` (`docker compose up` in each).
+```bash
+cd ~/software-security
+mkdir -p ~/practice
+git archive origin/main labs/week04-injection | tar -x -C ~/practice
+git archive origin/main labs/week06-authn-authz | tar -x -C ~/practice
+```
 
-| # | Challenge | Topic | Hint | Self-check |
-|---|-----------|-------|------|-----------|
-| 1 | Log in as another user without their password | SQLi (W4) | the username field isn't parameterized | `solution_app.py` |
-| 2 | Run a command on the server | cmd injection (W4) | `host` is passed to a shell | `solution_app.py` |
-| 3 | Pop `alert(1)` that another user would trigger | stored XSS (W5) | the comment body is rendered raw | `fixed_app.py` (CSP) |
-| 4 | Read an order that isn't yours | IDOR (W6) | change the id; no ownership check | `attack.md` |
-| 5 | Become admin with a crafted token | weak JWT (W6) | `alg:none` / weak secret `"secret"` | `attack.md` |
-| 6 | Recover a password from its hash | crypto (W3) | unsalted MD5 + a wordlist | `solution_skeleton.py` |
+You now have `~/practice/labs/week04-injection` and `~/practice/labs/week06-authn-authz`. Edit the `student_patch.py` files there. If a check below passes before you have changed anything, ask your instructor.
 
-**For each:** note your payload/command + a one-line fix. Compare with the linked solution.
+## Checkpoint 1 — Injection control, 35 minutes
 
-## Warm-up (concepts)
-- Draw a 3-element STRIDE table for any one target above.
-- Name the CWE for each challenge you solved.
+**File:** `~/practice/labs/week04-injection/student_patch.py`. Complete `authenticate()` with bound SQL values and `ping_argv()` with one parsed IPv4 argument list. Run the provided checks:
 
-> Then take the **[cumulative review quiz (Quiz 1)](../../quizzes/quiz1.md)** this week,
-> and review weak spots before the Week 8/9 midterm.
+```bash
+cd ~/practice/labs/week04-injection
+docker run --rm --pull never --network none -e PYTHONDONTWRITEBYTECODE=1 \
+  -v "$PWD:/exam:ro" -w /exam week04-injection-injection-lab:latest \
+  python3 student_checks.py
+```
+
+Before your edit you should see `FAILED`; after a correct patch, `OK`. Record an ordinary login and IPv4 request that still work, plus a SQL payload and a shell-metacharacter host that are denied. In one sentence, explain how parameter binding and `shell=False` keep data out of code. The checker only pretends to run ping; it does not contact a network target.
+
+## Checkpoint 2 — Token and object boundary, 35 minutes
+
+**File:** `~/practice/labs/week06-authn-authz/student_patch.py`. Complete the pinned JWT verification and the server-side order-owner decision. Run the provided checks:
+
+```bash
+cd ~/practice/labs/week06-authn-authz
+docker run --rm --pull never --network none -e PYTHONDONTWRITEBYTECODE=1 \
+  -v "$PWD:/lab:ro" -w /lab kosen-swsec-week06:local \
+  python3 student_checks.py
+```
+
+Before your edit you should see `FAILED`; after a correct patch, `OK`. Record owner success, cross-user denial, and one unsigned or wrong-audience token denial. Explain why a valid identity alone does not authorize access to another person's order. The checker runs the app inside Python; it does not start a web server.
+
+If `docker run` says the image is missing, build it in the real lab folder while online: `cd ~/software-security/labs/week04-injection && docker compose build` (or `week06-authn-authz`).
+
+## Debrief, in the 120–145 minute block
+
+Open your Week 3 `migrate.py` and explain why a wrong password leaves an old MD5 record unchanged, and why a correct login can upgrade it to Argon2id. Review one scanner error versus a clean result from Week 2. These are discussion prompts, not extra 35-minute code tasks. The Week 9 practical also has a threat-model/scanner station and a password-migration station, so revise Weeks 2 and 3 as well.
+
+For each checkpoint keep: your diff, the exact command and result, the root cause (the trust boundary), the legitimate and attack controls, and one limit. The real Week 9 practical (Tuesday 29 December) is a closed-book paper exam, not a computer exam: you get printed code and results and write your answers by hand. After each checkpoint, try writing the same fix again on paper without the computer. [Review schedule](README.md) · [Practical blueprint](../week09-midterm-practical/ctf.md).

@@ -2,6 +2,13 @@
 
 # DevSecOps Pipeline — Wiring & Interpreting Results
 
+## Bounded class check and full workflow extension
+
+The current class uses `student_task.py` and `check_student.py` for a small, explainable fail-closed/logging change. Run `python3 check_student.py` on your own machine: an unfilled starter produces a red result; a correct student change produces green under the **same** checks. Keep both outputs and the code diff. (`student-check-ci.yml` is included if you want to try the same check in your own lab-only repository; it is optional and adds no points. It has read-only repository permission and uses no AI service or credentials.)
+
+The full Semgrep/Trivy/Gitleaks workflow described below is retained as extended project practice. Its findings/thresholds are a different scope from the bounded student-control job; passing one does not prove that the other passed. Ranking/game points do not add to the worksheet's 100 points.
+
+
 **OWASP 2025:** A09 Security Logging & Alerting Failures, A10 Mishandling of
 Exceptional Conditions (plus the scanners cover A02/A03).
 
@@ -12,14 +19,13 @@ copy it into a repo's `.github/workflows/` directory.
 
 ## 1. Wire it in
 
+In a lab-only repository that holds this lab's files: `git add .` includes the workflow AND the lab source it scans, and the push runs the workflow:
 ```bash
-# From the root of the repo you want to protect:
 mkdir -p .github/workflows
-cp path/to/labs/week15-devsecops-pipeline/security-ci.yml \
-   .github/workflows/security-ci.yml
-git add .github/workflows/security-ci.yml
+cp security-ci.yml .github/workflows/security-ci.yml
+git add .
 git commit -m "ci: add security gate (Semgrep + Trivy + Gitleaks)"
-git push        # the workflow runs on push/PR to main
+git push
 ```
 
 No secrets are required: Semgrep, Trivy, and Gitleaks all run with the
@@ -44,12 +50,14 @@ Each tool runs **twice** on purpose:
 1. **Report step** (`exit-code: 0` / `|| true`) — produces a SARIF file and
    uploads it to the GitHub **Security** tab. Uses `if: always()` so the
    SARIF uploads *even when the build is about to fail*.
-2. **Gate step** (`exit-code: 1`, `--error`) — re-runs and **fails the build**
-   if any HIGH/CRITICAL finding (or any secret) exists.
+2. **Gate step** (`exit-code: 1`, `--error`) — re-runs and **fails the build**:
+   Semgrep on any selected-rule finding, Trivy on HIGH/CRITICAL findings,
+   and Gitleaks on any detected secret. A scanner error at this step is not
+   a clean pass; investigate false positives before a narrow documented exception.
 
-This split is deliberate: one scan can only have one severity filter. The
-report step has none, so the Security tab shows findings of every severity;
-the gate step has its own HIGH/CRITICAL threshold and decides the build.
+This split is deliberate: the report step has no severity filter, so the
+Security tab shows findings of every severity. The gate applies each tool's
+configured failure condition above.
 Report-then-gate gives you both the full picture *and* a red build.
 
 > Why not just `|| true` everything? Because then the build never fails and
@@ -82,14 +90,18 @@ Report-then-gate gives you both the full picture *and* a red build.
 
 ## 6. Run the sample service locally (logging + fail-closed demo)
 
+From this lab folder (on Git Bash for Windows, activate with `source .venv/Scripts/activate`):
 ```bash
-pip install flask
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install flask
 python sample-service.py
-# In another shell:
-curl -s -X POST localhost:5001/login -H 'Content-Type: application/json' \
-     -d '{"token":"nope"}'                       # -> 401, logs authn_failure
-curl -s localhost:5001/admin -H 'Authorization: bob-token'   # -> 403 authz_failure
-curl -s localhost:5001/admin -H 'Authorization: alice-token' # -> 200 (admin)
+```
+In another window, expect 401 (`authn_failure`), 403 (`authz_failure`) and 200 (admin):
+```bash
+curl -s -X POST localhost:5001/login -H 'Content-Type: application/json' -d '{"token":"nope"}'
+curl -s localhost:5001/admin -H 'Authorization: bob-token'
+curl -s localhost:5001/admin -H 'Authorization: alice-token'
 ```
 Watch the structured `event=...` security log lines — those are what a SIEM
 would alert on (A09). Note that errors deny by default (A10, fail-closed).

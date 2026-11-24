@@ -1,6 +1,7 @@
 services:
   authz-lab:
-    image: python:3.12-slim
+    build: .
+    image: kosen-swsec-week06:local
     working_dir: /lab
     ports:
       # 127.0.0.1 = this machine only. Lab apps are deliberately vulnerable; keep them off the classroom network.
@@ -8,11 +9,8 @@ services:
     volumes:
       - ./:/lab
     # PRACTICE build: with no .env the app serves public demo flags (FLAG{..._demo}).
-    # Graded flags come only from your hosted CTFd instance, never from this local run.
+    # These shared demo flags are the expected evidence; nothing is submitted on ctf.zcr.ai.
     environment:
       - FLAG_IDOR
       - FLAG_JWT
-    command: >
-      bash -c "pip install --no-cache-dir flask pyjwt &&
-               echo '--- vulnerable app on :8080 (use solution_app.py for the fixed version) ---' &&
-               python vulnerable_app.py"
+    command: python vulnerable_app.py

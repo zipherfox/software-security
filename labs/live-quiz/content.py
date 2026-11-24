@@ -198,8 +198,12 @@ def _load_courses() -> list[dict]:
     deployment: with no $COURSES set the platform behaves exactly as before,
     serving CONTENT_ROOT under one course.
 
-    $COURSES is a JSON list of {slug, title, root, arena_url?}. `root` is the
-    directory holding the weekNN-* dirs (i.e. a course repo's `labs/`).
+    $COURSES is a JSON list of {slug, title, root, arena_url?, late_pct_per_day?}.
+    `root` is the directory holding the weekNN-* dirs (i.e. a course repo's `labs/`).
+    `late_pct_per_day` (whole percent, 0-100) is what each started day late costs
+    (KOSEN: 10). It is applied only to assignments given a late window (`late_days`),
+    and only to work out the penalty; absent or 0 leaves the penalty to the teacher.
+    See submission.py late_pct_per_day().
     """
     raw = os.environ.get("COURSES", "").strip()
     if not raw:
@@ -209,6 +213,7 @@ def _load_courses() -> list[dict]:
             "root": CONTENT_ROOT,
             "arena_url": os.environ.get("ARENA_URL", "").strip() or None,
             "unit": "week",
+            "late_pct_per_day": 0,
             "modules": [],
             "unit_label": "Week",
         }]
@@ -229,9 +234,14 @@ def _load_courses() -> list[dict]:
         unit = str(c.get("unit") or "week")
         if not UNIT_NAME_RE.match(unit):
             raise ValueError(f"COURSES: {slug!r} has bad unit {unit!r}")
+        late = c.get("late_pct_per_day", 0)
+        # A typo here silently changes every student's mark, so refuse it at startup.
+        if isinstance(late, bool) or not isinstance(late, int) or not 0 <= late <= 100:
+            raise ValueError(f"COURSES: {slug!r} late_pct_per_day must be a whole number"
+                             f" 0-100, got {late!r}")
         out.append({"slug": slug, "title": str(c.get("title") or slug),
                     "root": root, "arena_url": (c.get("arena_url") or None),
-                    "unit": unit,
+                    "unit": unit, "late_pct_per_day": late,
                     "modules": _clean_modules(slug, c.get("modules")),
             # Which unit the cohort is on right now, as a `number` (not an index):
             # optional, and absent means "say nothing", which is what every course
@@ -350,6 +360,7 @@ PUBLIC_FILES = {
     "exam": "exam.md",                  # W8, W18 written
     "ctf": "ctf.md",                    # W9, W19 practical
     "scrimmage": "scrimmage.md",        # W16 capstone
+    "feedback": "feedback.md",          # W20 reflection record; formative only
     # per-week supplements a worksheet references
     "attack": "attack.md",              # W6, W10, W14
     "harden": "harden.md",              # W13
@@ -377,6 +388,7 @@ KIND_LABELS = {
     "exam": "Exam paper",
     "ctf": "CTF brief",
     "scrimmage": "Scrimmage",
+    "feedback": "Feedback record",
     "attack": "Attack notes",
     "harden": "Hardening notes",
     "dependency-confusion": "Supply-chain notes",
@@ -551,10 +563,17 @@ def list_weeks(course_slug: str | None = None) -> list[dict]:
                 primary = k
                 break
         primary = primary or (available[0] if available else None)
-        primary_file = (PUBLIC_FILES.get(primary) if primary != "slides"
-                        else None)
         # Independent of `primary` on purpose — see BADGE_ORDER's docstring.
         assessment = next((k for k in BADGE_ORDER if k in available), None)
+        # A project checkpoint can retain worksheet.md without adding another
+        # graded lab. Its explicit declaration also makes the studio overview
+        # the entry point, ahead of optional practice in scrimmage.md.
+        if assessment == "worksheet" and _formative_worksheet(os.path.join(d, "worksheet.md")):
+            assessment = "scrimmage" if "scrimmage" in available else "readme"
+            if "readme" in available:
+                primary = "readme"
+        primary_file = (PUBLIC_FILES.get(primary) if primary != "slides"
+                        else None)
         title = None
         if primary_file:
             title = _title_of(os.path.join(d, primary_file))
@@ -582,6 +601,14 @@ def list_weeks(course_slug: str | None = None) -> list[dict]:
             "available": available,
         })
     return out
+
+
+def _formative_worksheet(path: str) -> bool:
+    text = _slurp(path)
+    return bool(text and any(
+        re.match(r"^\*\*Assessment:\*\*\s+Formative\b", line)
+        for line in text.splitlines()[:12]
+    ))
 
 
 # Which document IS the week, when the URL doesn't say. Order matters and is not
@@ -647,9 +674,8 @@ PRIMARY_BADGE = {
 # Which of those carry a mark.
 #
 # LAB IS IN THIS SET, and leaving it out was the worst defect in the badge system
-# it was added to fix. syllabus.md:163 — "Weekly lab worksheets — 13 graded | 30%"
-# — makes the worksheets the SINGLE LARGEST component of the final grade, and all
-# 13 of them render from `primary == "worksheet"` → badge LAB. With LAB excluded,
+# it was added to fix. The weekly worksheet category is 30% in KOSEN; its
+# 12 graded worksheets need LAB even when the primary page is a slide. With LAB excluded,
 # the 30% component was drawn in the same greyed style as "read anything, any
 # time", i.e. the feature whose entire purpose is to stop a student walking into
 # graded work unawares was telling them the largest graded component was optional
@@ -669,7 +695,7 @@ GRADED_BADGES = {"LAB", "EXAM", "CTF"}
 # content in sight. The worksheet is one click away either way (learn_doc.html's
 # crumb links every OTHER available kind) — see BADGE_ORDER below for why this
 # alone does not touch grading.
-PRIMARY_ORDER = ("mock-ctf", "exam", "ctf", "scrimmage", "slides", "worksheet", "readme")
+PRIMARY_ORDER = ("mock-ctf", "exam", "ctf", "scrimmage", "slides", "worksheet", "feedback", "readme")
 
 # What a week's badge/graded status is ABOUT — deliberately not PRIMARY_ORDER.
 # list_weeks() used to key PRIMARY_BADGE off `primary` directly, on the

@@ -1,25 +1,15 @@
-# Week 7 — Reflection & Review (pre-Midterm)
+# Week 7 — Reflection and review
 
-No new content. Consolidate **Weeks 1–6** and prepare for the midterm (Weeks 8–9).
+**Software Security 2 (02005094) · Tuesday 15 December 2026, 09:05–11:50 · reviews Weeks 1–6 · 150 minutes.** No new topics this week, and nothing to submit.
 
-## ✅ This week — what to do
-1. **Before class** — review **Weeks 1–6** (slides, your worksheets, the CWE/OWASP list).
-2. **In class (150 min)** — cumulative review quiz (`../../quizzes/quiz1.md`) → **Security Jeopardy** → **mock CTF** in the exam format (`mock-ctf.md`) → debrief.
-3. **Prepare** — note weak areas; the **midterm is Weeks 8–9**.
+| Minutes | Activity |
+|---|---|
+| 0–30 | Cumulative review quiz on `learn.zcr.ai/quiz` (code given in class). Practice: [Quiz 1 practice questions](../../quizzes/quiz1.md) |
+| 30–50 | Selected Security Jeopardy clues; explain the reasoning |
+| 50–120 | Two practice checkpoints (redo the Week 4 and Week 6 patches), 35 minutes each |
+| 120–145 | Compare controls, correct misunderstandings, plan revision |
+| 145–150 | Save evidence and a personal revision list |
 
-*Time breakdown: [AGENDA.md](../../AGENDA.md).*
+The review quiz counts in the quiz category; there is no extra worksheet or exam mark this week. The real review quiz uses different questions from the practice page. The lowest one regular weekly quiz is dropped. The practice checkpoints and the game are practice only: leaderboard, first-blood and House points are just for fun.
 
-## 🎯 Signature activity — "Security Jeopardy"
-Team quiz-show across all six topics with point values and a final wager:
-
-| Threat Modeling | Tooling | Crypto | Injection | XSS | Auth & Access |
-|---|---|---|---|---|---|
-
-## 🧪 Mock CTF
-A short mixed mini-CTF in the **exact format of Week 9** so there are no surprises — injection, XSS, auth/IDOR, crypto. → **[mock-ctf.md](mock-ctf.md)** (with hints).
-
-## Deliverable
-Each student submits a one-page **cheat sheet** (eligible as an open-note aid in the exam, if the instructor allows).
-
-## Covers
-Weeks 1–6: [threat modeling](../week01-threat-modeling/), [SDLC & tooling](../week02-sdlc-tooling/), [cryptography](../week03-cryptography/), [injection](../week04-injection/), [XSS](../week05-xss-client-side/), [authn/authz](../week06-authn-authz/).
+Today's 70-minute practice: [mock-ctf.md](mock-ctf.md). **Both midterms are closed-book paper exams:** Week 8 (written) on Tuesday 22 December and Week 9 (practical) on Tuesday 29 December, each 09:05–11:50. Bring your student ID card and a pen; no computer, phone, notes or AI. In Week 9 you get printed code and test output and you write your analysis, your fix as code and your test results by hand; there is no flag. Practise writing the Week 4 and Week 6 fixes on paper as well.

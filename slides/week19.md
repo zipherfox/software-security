@@ -2,61 +2,63 @@
 marp: true
 theme: default
 paginate: true
-header: "Software Security · Week 19 · Final"
+header: "Software Security 2 · KOSEN 02005094 · Week 19 · Final team practical"
 ---
 
-# Week 19
-## Final — Capstone CTF + Project Demos
-The grand finale
+# Week 19 — Final team practical
+## KOSEN 02005094
+Paper exam · your project team of 2–3 · whole term, mostly Weeks 10–15
 
-<!-- The finale — make it celebratory + high-energy. Before class: graded flags for challenges 1–8, 12 and 14 come from each student's own hosted instance (confirm everyone can log in and reach one, and flip Smash (#8) from hidden to visible); bring up the local targets for 9, 10, 11 and 13, open CTFd, set the demo schedule. Confirm projects run. ~2 min. -->
+Date, time and room: announced by your instructor (final exam period 8–16 March 2027).
 
----
-
-## Two parts
-
-1. 🏆 **Capstone CTF tournament** — whole-term, team-based
-2. 🎤 **Final project demo videos** — graded (submitted with the report)
-
-<!-- The CTF tournament is the live part. Demo videos were graded beforehand; after the CTF, call aside only the teams you flagged for a short viva-style Q&A. -->
+<!-- Instructor: print the paper version (instructor/exams/kosen-02005094/week19-paper-form-B.md) and use its matching key. No computers in this exam. -->
 
 ---
 
-## 🏆 CTF tournament
+## Format and time
 
-- Web · API · memory safety · supply chain · cloud · LLM/agentic · DevSecOps — 14 challenges, 165 pts
-- Team leaderboard, prizes — the **live CTFd board** (bigger, includes bonus/boss challenges)
-- **Graded score** comes from the paper trail: flag/proof + payload + one-line mitigation per challenge
-
-<!-- Run from ctf.md (graded, 14 challenges/165 pts) + exams/item-bank.md (CTF pool, incl. the boss chain). CTFd's live board runs more challenges at different point values for engagement/leaderboard — that scoreboard is NOT the grade; ctf.md's submission is. Dynamic scoring + first-blood bonus on CTFd; announce first-bloods aloud for hype. Prizes for top Houses. -->
-
----
-
-## 🎤 Final project demo (graded)
-
-Present your secured build end-to-end:
-
-- Threat model → vulnerabilities → remediation
-- SBOM + signed artifact
-- Security CI/CD pipeline
-- **Recorded video walkthrough**, linked in the report and due with it — graded asynchronously on the rubric
-- No per-team live slot — the instructor may call a team for a short live Q&A
-
-<!-- Format change (2026-07-26): with N≈80–120 students in teams of 2–3, a 10-min-demo+5-min-Q&A live format needs far more than the 90 minutes this block has — it cannot physically run. Video is graded beforehand on the project rubric (project/README.md) + peer-contribution multiplier; live Q&A only as a viva spot-check for teams the instructor flags (decided 2026-10-24: the final day already holds the written exam and the CTF) — not a re-demo. -->
+- **150 minutes:** instructions 10 + four stations 130 + collecting papers 10
+- **Paper, closed book:** no computer, phone, notes or AI; one answer booklet per team
+- **Four stations × 25 marks = 100**
+- All 100 marks are Technical; they count **15%** of the course
 
 ---
 
-## Bring
+## Four stations — 130 minutes
 
-- **Video walkthrough link in your report** (due with the report)
-- Threat model + vuln report (CWE/OWASP mapped)
-- Fixed code, SBOM, signed artifact, CI pipeline
+- **A: 30 minutes, 25 marks** — who may read which orders, and which fields a client may set (practice: Week 10)
+- **B: 35 minutes, 25 marks** — explain a given memory crash; write the Rust character counter (practice: Week 11)
+- **C: 30 minutes, 25 marks** — trusted signing key and a small S3 policy fix (practice: Weeks 12–13)
+- **D: 35 minutes, 25 marks** — clean up AI output and deny access on errors (practice: Weeks 14–15)
 
-<!-- Checklist — anything missing costs rubric points. Confirm the CI pipeline actually fails on a finding (don't take their word; have them show it in the video). -->
+Practise writing these fixes by hand before the exam.
 
 ---
 
-# Thank you
-You can now threat-model, break, fix, and ship secure software.
+## Splitting the work
 
-<!-- Close the term: name the arc (threat-model → break → fix → ship). Point to next steps (OWASP, CTFs, the readings). For the research: post-test + post-survey happen now (per the study timeline). Celebrate. -->
+- Your team may split the stations between members
+- Every member must be able to explain **any** station if asked
+- Write on the first page who wrote which station
+
+---
+
+## What earns marks
+
+- Find the problem; explain why it happens and where the trust boundary is
+- Write your own fix as code (small syntax slips are fine if the idea is clear)
+- One example that should work and one that should be refused, with the result you expect
+- Read a printed test output: what it shows and one thing it cannot prove
+
+Each station: root cause 5 + fix 10 + examples 7 + evidence and limits 3 = 25 Technical. 100 marks = 15 course points.
+
+---
+
+## On the day, and the project
+
+- Write every member's name, student ID and stations on the first page
+- Stop writing after 130 minutes; papers are collected in the last 10 minutes
+- Project report, code and a **video of at most 5 minutes** were due **Sunday 28 February 2027, 23:59**, marked separately (15%)
+- No project questions during the 130 minutes; ask them in Weeks 16 and 20
+
+[The four stations](../labs/week19-final-ctf-capstone/ctf.md)

@@ -1,21 +1,7 @@
-# Week 8 — Midterm: Written / Concept Exam
+# Week 8 — Midterm written examination
 
-Covers **Weeks 1–6**.
+**Software Security 2 (02005094) · Tuesday 22 December 2026, 09:05–11:50, in our usual classroom · one 165-minute slot.** Administration 10 + written working/checking 145 + collection 10. The current [specimen paper](exam.md) has ten questions, raw 100 split Basic 50 / Technical 50; it contributes **8%** of the course (4 Basic + 4 Technical).
 
-## ✅ This week — what to do
-1. **Before** — study **Weeks 1–6**.
-2. **In class** — **written midterm** (`exam.md`); bring what the format allows (closed/open-note — instructor's choice).
-3. **After** — answers reviewed in the next session.
+Scope: Weeks 1–6: threat modeling, tooling, application crypto misuse/migration, injection, XSS and authentication/authorization. Correction, appropriate controls and limits are assessed.
 
-*Time breakdown: [AGENDA.md](../../AGENDA.md).*
-
-## Format
-Closed/open-note (instructor's choice). Question types:
-- Threat modeling: build/critique a STRIDE model and identify trust boundaries.
-- **CWE/OWASP mapping:** classify given vulnerabilities.
-- **"Spot the vuln":** find and explain the flaw in a code snippet (injection, XSS, auth, crypto misuse).
-- **Applied SQL injection:** given a vulnerable endpoint, write the payload *and* the one-line reasoning — this is a full section of the paper (30 of 100 pts), not a single question. No fix credit here — that's Section D's job.
-- Secure-design short answers (least privilege, defense in depth, fail closed).
-
-## Pairs with
-[Week 9 — Midterm Practical (CTF)](../week09-midterm-practical/).
+This is a paper exam and **closed book**: bring your student ID card and a pen (blue or black). No notes, phone, calculator or computer. The real exam paper is handed out at the exam; the specimen is for practice only. Watch for the official midterm notice as well. [Agenda](../../AGENDA.md) · [Syllabus](../../syllabus.md).

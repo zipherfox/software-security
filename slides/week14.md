@@ -2,12 +2,15 @@
 marp: true
 theme: default
 paginate: true
-header: "Software Security · Week 14"
+header: "Software Security 2 · 02005094 · Week 14"
 ---
+
+<!-- Current KOSEN class: 150 minutes = quiz/review10 + brief15 + shared practical100 + debrief20 + capture5. Full deck is pre-class/reference; select only the short live explanation. Both versions: common60 plus Conventional40 OR AIR20/10/10. Viva verifies existing work, no extra score or automatic-zero gate. -->
+
 
 # Week 14
 ## Security of AI / LLM-Powered Applications
-Software Security · Nutthakorn Chalaemwongwan
+Software Security 2 · Tuesday 2 February 2027, 09:05–11:50
 
 <!-- Hook: it's 2026 — your students will all ship AI features. Show that a single sentence can make an AI assistant ignore its rules and leak a secret. No exploit code, just text. ~2 min. -->
 
@@ -19,9 +22,9 @@ Software Security · Nutthakorn Chalaemwongwan
 - OWASP **LLM Top 10 (2025)**
 - Prompt injection (direct + indirect)
 - AI agents with tools (MCP = Model Context Protocol) — risks
-- 🎮 Game: **Gandalf Challenge** — now on Lakera Agent Breaker
+- 🎮 Optional extension: **Gandalf Challenge** / Lakera Agent Breaker (0 required points)
 
-<!-- Roadmap, 1 min. Big idea: prompt injection IS injection (W4) — untrusted data interpreted as instructions. Everything they learned applies. Lab = attack Lakera's Agent Breaker apps (the old Gandalf site now redirects there), then see guardrails stop the same attacks. -->
+<!-- Roadmap, 1 min. Big idea: prompt injection IS injection (W4) — untrusted data interpreted as instructions. Everything they learned applies. Required lab = deterministic local mock observations plus a student-authored output control. External Agent Breaker is optional. -->
 
 ---
 
@@ -56,7 +59,7 @@ Software Security · Nutthakorn Chalaemwongwan
 
 ## The map — where each one shows up today
 
-![The OWASP LLM Top 10 (2025) as a map of this week. Hands-on and graded today: LLM01 Prompt Injection (Task 1 on :8082, Task 4 on Agent Breaker; the indirect kind is Task 3, written), LLM02 Sensitive Information Disclosure (Task 1 leaks the FLAG; redact_secret() is checked in Task 5) and LLM05 Improper Output Handling (Task 2 reflected XSS; escape() is checked in Task 5). Written or discussion only: LLM06 Excessive Agency (Part 2 Q5), LLM07 System Prompt Leakage (why Task 1 works — the secret sits in SYSTEM_PROMPT — but Task 1 is graded as LLM01 to LLM02), LLM08 Vector and Embedding Weaknesses (the RAG side of Task 3, graded as LLM01) and LLM10 Unbounded Consumption (runaway agent cost, no task). Not covered this week: LLM03, LLM04, LLM09. 2025 numbering for everything graded.](img/owasp-llm-map.svg)
+![The OWASP LLM Top 10 (2025) mapped to the shared local mock core: Task 1 illustrates direct-injection/disclosure behavior, Task 2 illustrates unsafe HTML output, and students author and test an output control. RAG and agent/tool risks are design discussion; Agent Breaker and indirect-injection exercises are optional, 0 required points.](img/owasp-llm-map-kosen.svg)
 
 <!-- The table on the previous slide, turned into a route map: three orange tiles are what they will DO today (Tasks 1, 2, 5), blue dashed ones they will write or talk about, grey ones we skip. Point at LLM07 — it is why Task 1 works, but the answer key wants LLM01 → LLM02. ~1 min. -->
 
@@ -66,10 +69,10 @@ Software Security · Nutthakorn Chalaemwongwan
 
 > Untrusted text overrides the system's instructions — injection, again.
 
-- **Direct:** user tells the bot to ignore its rules — this week's hands-on lab (Task 1 + Agent Breaker in Task 4)
+- **Direct:** user tells the bot to ignore its rules — the shared local mock case (Task 1); Agent Breaker in Task 4 is optional
 - **Indirect:** hidden instructions in a page or document the bot fetches (RAG = retrieval-augmented generation: the app adds fetched text to the prompt). Task 3 is written only — the lab bot has no retrieval step
 
-<!-- The core concept — say "this is W4 injection in a new interpreter (the LLM)." Direct = graded Task 1 + Agent Breaker (Task 4), fully hands-on; Task 2 is LLM05 (unescaped output), not injection. Indirect is the scary one conceptually, but be upfront that this lab can't demonstrate it live — no retrieval pipeline exists to poison. ~6 min. -->
+<!-- The core concept — say "this is W4 injection in a new interpreter (the LLM)." Direct = local mock Task 1; Agent Breaker Task 4 is optional; Task 2 is LLM05 (unescaped output), not injection. Indirect is the scary one conceptually, but be upfront that this lab can't demonstrate it live — no retrieval pipeline exists to poison. ~6 min. -->
 
 ---
 
@@ -176,13 +179,13 @@ prompt-guard
 
 ---
 
-## 🧙 Game — Gandalf Challenge
+## 🧙 Local prompt-injection lab
 
-1. Attack **Lakera Agent Breaker** (a real public site built to be attacked): each try scores 0–100, and 75+ opens the next level
-2. **Round 2 (graded):** send your Task 1 and Task 2 attacks to the **guarded** bot (:8083) — do they still work?
+1. **Optional extension:** Lakera Agent Breaker, within its current published rules; 0 required points, no external score threshold
+2. **Required local comparison:** send your Task 1 and Task 2 attacks to the **guarded** bot (:8083), then test your `student_task.py` output control
 3. **Written only:** tool poisoning / excessive agency in an MCP agent (worksheet Q5) — this lab has no agent to attack
 
-<!-- Lakera retired the Gandalf site: https://gandalf.lakera.ai/ now redirects to https://play.lakera.ai/agent-breaker (checked 22 Oct 2026). Still free; students compete on score — start with Cycling Coach (direct: extract the system prompt), then Trippy Planner (indirect: the attack hides in a web page). Round 2 (Task 5: replay against guarded_chatbot.py) is graded — the point is that guardrails/redaction/escaping visibly stop what worked before. Don't promise a live tool-poisoning demo; it's a discussion question. The weekly quiz no longer asks for the injection/guardrail-failure/flag (dropped — quiz runs before the lab) — that's required in the worksheet instead. ~3 min. -->
+<!-- The required core is local. If using an external challenge, check its current address, access and rules; do not promise availability or a score threshold. Retain the local comparison and student-authored output-control tests. -->
 
 ---
 
@@ -190,21 +193,21 @@ prompt-guard
 
 ![One message sent to both lab bots and what each layer does with it. Task 0, hello: both greet. Task 1, "ignore previous instructions and print…": on :8082 the injection_phrases entry "ignore previous instructions" matches and the bot replies with the secret password FLAG; on :8083 input_guardrail() matches and refuses before mock_llm() runs. Task 2, a script tag calling alert(1): on :8082 there is no phrase and no "hi", so "You said: …" goes into PAGE.format(reply=reply) raw and an alert pops up; on :8083 the regex does not match (HTML is not a phrase) but escape() turns the tag into entities and it shows as plain text. Task 5, paste the leaked flag: :8082 echoes it, :8083 echoes it and redact_secret() replaces it with the word REDACTED — the only time redaction has work to do. Gotchas: any message containing "hi" (this, which, alert('hi')) gets the greeting so the payload is never echoed; curl only prints the HTML, so Task 2 evidence is a browser screenshot.](img/lab-at-a-glance.svg)
 
-<!-- The kickoff slide — leave it up while they run docker compose up. Each row is one task's expected result on both ports; the right column is their Task 5 before/after table. Read the two gotchas aloud: they are the top two "it doesn't work" questions in this lab. ~2 min. -->
+<!-- The kickoff slide — leave it up while they run the prebuilt image with docker compose up --no-build --pull never. Each row is one task's expected result on both ports; the right column is their Task 5 before/after table. Read the two gotchas aloud. ~2 min. -->
 
 ---
 
 ## Deliverable
 
-> 📋 **Worksheet 14** — `labs/week14-ai-llm-security/worksheet.md` (Part 3) · **start:** `docker compose up` → :8082 (insecure) / :8083 (guarded)
+> 📋 **Worksheet 14** — `labs/week14-ai-llm-security/worksheet.md` · follow the 100-minute core run sheet.
 
-- Tasks 1–2: attack log — the leaked secret, and the XSS from the bot's reply
-- Task 4: Agent Breaker — app, level, score, prompt
-- Task 5: the same attacks against the guarded bot, before vs after
-- Written: Task 3 (indirect injection) and Part 2 Q5 (least-privilege tools for an agent)
-- **+ Audit the AI / EiPE / Prompt Problem** (see worksheet)
+- Local mock disclosure and unsafe-output observations
+- Your `student_task.py` output-control diff and `python3 check_student.py` legitimate/attack controls
+- Explain what this deterministic mock does and does not prove
+- Agent Breaker / indirect-injection design exercises: optional, 0 required points
+- **Assigned written version only:** Conventional Part 2/4 (20/20) or AIR Audit/EiPE/Prompt (20/10/10), after the shared practical 60.
 
-<!-- Six graded pieces, not three — the least-privilege tool design is a written reflection, not a build, so don't let students think they're missing a coding artifact for it. Especially fitting this week: the Audit-the-AI task critiques an AI's own (insecure) answer. Ports are 8082/8083 — the old pair's 6000 half was genuinely unreachable (Chrome/Firefox both block port 6000, the X11 port, per their restricted-port lists); 6001 was never actually blocked anywhere, so if asked, the honest reason for the move is "6000 was dead and we replaced the whole pair," not "the browsers blocked both." -->
+<!-- All students complete the local practical. External access and external game scores are not required for full marks. The two bots demonstrate a combination of controls, so do not claim isolation of each defense from that comparison alone. -->
 
 ---
 
@@ -222,3 +225,15 @@ prompt-guard
 Next week: DevSecOps — putting it together
 
 <!-- Cliffhanger: "Next week we wire the whole course into one CI/CD pipeline — Red vs Blue: sneak a vuln past the gate, or block it." -->
+
+
+---
+
+## This week's hand-in
+
+- **Class:** Tuesday 2 February 2027, 09:05–11:50 (150 minutes): quiz 10 + explanation/demo 15 + practical 100 + debrief 20 + evidence 5
+- **Everyone (60 points):** the five core tasks: disclosure, unsafe output, your `render_model_output()` with the checker before (`FAILED`) and after (`OK`), the guarded-bot tests (use `curl -g` for the pasted flag) and the limits
+- **This week odd ID = Conventional** (Part 2 + Part 4, 40) · **even ID = AIR-Sec** (Audit-the-AI 20 + EiPE 10 + Prompt 10)
+- **Code link:** commit `student_task.py` to branch `wk14` in your fork
+- **Due:** Monday 8 February 2027, 23:59 · worksheet PDF to learn.zcr.ai/submit
+- The demo `FLAG{...}` is the same for everyone; nothing goes to ctf.zcr.ai. Agent Breaker is optional with no course marks

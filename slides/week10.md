@@ -2,12 +2,15 @@
 marp: true
 theme: default
 paginate: true
-header: "Software Security · Week 10"
+header: "Software Security 2 · 02005094 · Week 10"
 ---
+
+<!-- Current KOSEN class: 150 minutes = quiz/review10 + brief15 + shared practical100 + debrief20 + capture5. Full deck is pre-class/reference; select only the short live explanation. Both versions: common60 plus Conventional40 OR AIR20/10/10. Viva verifies existing work, no extra score or automatic-zero gate. -->
+
 
 # Week 10
 ## API Security
-Software Security · Nutthakorn Chalaemwongwan
+Software Security 2 · Tuesday 5 January 2027, 09:05–11:50
 
 <!-- Welcome back after midterm. Hook: change one number in an API URL and read a stranger's car location — that's the #1 API bug, and it's everywhere. Today: the OWASP API Top 10, hands-on. ~2 min. -->
 
@@ -15,13 +18,13 @@ Software Security · Nutthakorn Chalaemwongwan
 
 ## Today
 
-- REST/GraphQL attack surface
+- How an API differs from a web page
 - OWASP **API Security Top 10**
 - BOLA & mass assignment
 - Rate limiting & resource consumption
-- 🎮 Game: **crAPI Raid**
+- 🥷 Local API raid: BOLA, mass assignment, throttling and a student-authored fix
 
-<!-- Roadmap, 1 min. Frame: APIs are where the web bugs (IDOR, injection) reappear without a browser to hide behind. Lab = raid the deliberately vulnerable crAPI app, then fix it. -->
+<!-- Roadmap, 1 min. The required lab uses the supplied local vulnerable and fixed APIs plus a student-authored control. crAPI is optional extension practice. -->
 
 ---
 
@@ -38,20 +41,20 @@ Software Security · Nutthakorn Chalaemwongwan
 
 ![The web-half bugs reappearing at API scale: Injection/SQLi (W4), XSS (W5) and Auth/IDOR (W6) all return; IDOR becomes BOLA (API1); and APIs add their own — mass assignment (API3) and no rate limit (API4). The point: there is no browser to hide behind, so the API endpoint is the whole attack surface, every field attacker-chosen.](img/web-to-api-bridge.svg)
 
-<!-- The visual bridge for the recap — walk left (the bugs they already know) to right (the same bugs at the endpoint + the three API-native ones). The one line: everything they learned W4-6 still applies, APIs just strip away the browser safety layer. ~1 min. -->
+<!-- The visual bridge for the recap — walk left (the bugs they already know) to right (the same bugs at the endpoint + the three API-native ones). Browser controls do not authorize API object access; the server must check it on every request. ~1 min. -->
 
 ---
 
 ## Why APIs are different
 
-- Machine-to-machine, no browser to "protect" them
+- Machine-to-machine clients can call the endpoint without browser controls
 - Object IDs everywhere → ripe for IDOR/BOLA
 - Clients can send any field → mass assignment
-- Maps to the **OWASP API Security Top 10:2023** (still current — no 2025 revision)
+- Maps to the **OWASP API Security Top 10:2023** edition used in this course
 
-![Side-by-side of why an API is a harder target than a browser-fronted web app. Left, the classic web app: a user → the browser (a free safety layer: same-origin, SameSite cookies, CSP, CSRF tokens) → the server, which is partly shielded because the browser enforces rules before a request leaves. Right, the API: an attacker-controlled client (curl, Postman, a script, a modified mobile app) talks straight to a raw JSON endpoint — no browser, no safety net, every byte and field attacker-chosen, so the endpoint itself is the whole attack surface. Two consequences: REST exposes object IDs, so incrementing one gives IDOR/BOLA; and the client can send any field, so binding the whole body gives mass assignment. The browser was doing security work you never noticed — remove it and every input must be treated as attacker-chosen.](img/browser-vs-api.svg)
+![A browser may enforce same-origin, SameSite cookies and CSP for browser interactions, while curl, scripts and modified apps can send requests directly to the API. Neither path establishes object authorization. An API must validate identity and authorize each requested object and bindable field on the server; object IDs need not be sequential for BOLA to occur.](img/browser-vs-api.svg)
 
-<!-- Key framing. No browser = no SameSite/CSP safety net; the API is the raw attack surface. APIs expose object ids by design (REST). Mobile/SPA clients are fully attacker-controlled — never trust what they send. ~5 min. -->
+<!-- Key framing. Browser protections address browser threats; they are not API authorization. Assume clients can choose request paths, IDs and fields. ~5 min. -->
 
 ---
 
@@ -62,7 +65,8 @@ GET /api/users/2/orders   → bob's orders — while authenticated as alice
 ```
 
 - Broken Object Level Authorization = IDOR, at API scale
-- The catch: the vulnerable endpoint doesn't check ownership **at all** — it hands back whatever `<id>`'s orders you ask for, full stop. There's no spoofable-but-present check to defeat; there's no check. (The `X-User-Id` header exists as this lab's stand-in for "auth," but on this route the code never even reads it.)
+- The vulnerable endpoint does not check ownership **at all**: it returns the orders for whatever `<id>` you ask for
+- The `X-User-Id` header is this lab's stand-in for "who is calling", but this route never even reads it
 
 ![BOLA shown as insecure versus secure. On the insecure API (:8080), alice (authenticated) sends GET /api/users/2/orders — asking for id 2, not hers — and because the code never reads who is calling, there is no check to spoof and none runs, so the server returns bob's orders with 200 OK. On the secure API (:8081) one ownership check produces a three-rung ladder: no identity header → 401 Unauthorized; alice (X-User-Id 1) requesting carol's id 3 → 403 Forbidden (she's known, but the object isn't hers); alice requesting her own id 1 → 200 OK. The whole fix is one question asked every request — does the caller own this object? — not escaping or a WAF rule, since the JSON was always well formed.](img/bola-ladder.svg)
 
@@ -95,7 +99,7 @@ POST /api/users  { "username":"x", "password":"y", "is_admin":true, "balance":99
 mass-assign
 ```
 
-<!-- Walk it: the server takes the whole JSON body and binds it to the model, including fields the UI never exposes (is_admin, balance). The sim runs both create_user() implementations for real — edit the body, flip the toggle, watch which fields survive. This is today's local target's mass-assignment bug and the weekly quiz Q6. Fix = allow-list the bindable fields (ALLOWED_CREATE_FIELDS in solution_api.py). ~5 min. -->
+<!-- Walk it: the server takes the whole JSON body and binds it to the model, including fields the UI never exposes (is_admin, balance). The sim runs both create_user() implementations for real — edit the body, flip the toggle, watch which fields survive. This is today's local target's mass-assignment bug. Fix = allow-list the bindable fields (ALLOWED_CREATE_FIELDS in solution_api.py). ~5 min. -->
 
 ---
 
@@ -154,14 +158,14 @@ rate-limit
 
 When you only have an IP/URL (Kali):
 
-```bash
-netdiscover                 # find hosts
-nmap -sV target             # ports/services (80/443?)
-nikto -h http://target      # web server issues
-dirb  http://target         # hidden paths
-wpscan --url http://target  # if WordPress
-hydra ... http-post-form    # password attack
-```
+| Tool | What it finds |
+| --- | --- |
+| `netdiscover` | hosts on the network |
+| `nmap -sV target` | open ports and services (80/443?) |
+| `nikto -h http://target` | web server issues |
+| `dirb http://target` | hidden paths |
+| `wpscan --url http://target` | WordPress problems |
+| `hydra` | password guessing (only on authorized targets) |
 
 *General awareness — no worksheet task uses these against today's target; useful for the CTF weeks later in the term.*
 
@@ -203,29 +207,29 @@ nc -lvp 34567 -e /bin/bash   # attacker gets a shell
 
 ## 🥷 Today's raid — the graded target
 
-Local API, `docker compose up` → :8080 (vulnerable) / :8081 (fixed):
+Prebuild the image before class with `docker compose build`; run `docker compose up --no-build --pull never` → :8080 (vulnerable) / :8081 (fixed):
 
-1. **BOLA:** `401 → 403 → 200` — probe, get denied, then read another user's orders as yourself
+1. **BOLA:** `401 → 403 → 200` — probe with no token, get denied reading *another* user's orders, then read *your own* orders successfully
 2. **Mass assignment:** smuggle `is_admin`/`balance` into account creation
 3. **Resource consumption:** `401×5 → 429×2` on `/api/login`
-4. **Defend:** switch to the pre-written `solution_api.py`, cite the exact fix line for each
+4. **Defend:** author the two bounded policy functions in `student_task.py`, verify positive/negative controls; use `solution_api.py` only as comparison reference
 
 > **Bonus (optional, ~20 min): crAPI** — OWASP's own intentionally-vulnerable API, real GUID-based BOLA, capture-only, no fix step, no separate grade
 
-<!-- Explain before lab: the local app IS the graded lab — 65 of 100 points, all four tasks above. crAPI is a genuinely fun bonus with zero grading weight and no fix/patch step — don't imply "Round 2" fixes crAPI, nothing does. Defend (task 4) is read-and-cite against a pre-written solution, not student-authored code. The weekly quiz no longer asks for the mass-assignment field/fix/flag (dropped — quiz runs before the lab) — that's required in the worksheet instead. ~3 min. -->
+<!-- The shared practical is 60 points. All students author the bounded authorization/binding change and explain controls. crAPI remains optional with zero required grading weight. -->
 
 ---
 
 ## Deliverable
 
-> 📋 **Worksheet 10** — `labs/week10-api-security/worksheet.md` (Part 3) · **kickoff:** `docker compose up` → :8080 (insecure) / :8081 (secure)
+> 📋 **Worksheet 10** — `labs/week10-api-security/worksheet.md` · follow the 100-minute core run sheet.
 
-- Findings mapped to the API Top 10:2023 + your two flags (`FLAG_BOLA`, `FLAG_MASSASSIGN` — public demo values on a local run: practice, not personal)
-- Fixes (authz checks, schemas, limits) — cited from `solution_api.py`
-- Proof exploits now fail
-- **+ Audit the AI / EiPE / Prompt Problem** (see worksheet)
+- Local BOLA/mass-assignment/throttling observations, mapped to the API taxonomy
+- Your `student_task.py` authorization/binding diff and `python3 check_student.py` results
+- Legitimate requests still succeed; cross-user requests and sensitive binding fail
+- **Assigned written version only:** Conventional Part 2/4 (20/20) or AIR Audit/EiPE/Prompt (20/10/10), after the shared practical 60.
 
-<!-- Before/after + API-Top-10 mapping. AI-resilient tasks count. Also the NoteVault project API task. Both flags come from the local target (public demo values — practice, not attributable) — remind students crAPI capture isn't part of the deliverable. -->
+<!-- The prebuilt solution is a comparison reference. Students author the bounded policy functions and retain red/green evidence. Public demo flags alone do not identify a student's work. -->
 
 ---
 
@@ -243,3 +247,16 @@ Local API, `docker compose up` → :8080 (vulnerable) / :8081 (fixed):
 Next week: Memory-safety & exploitation
 
 <!-- Cliffhanger: "Next week we leave the web — crash a C binary with a fuzzer and hijack its execution, then rewrite it in Rust." Remind crAPI pulled before next session. -->
+
+
+---
+
+## This week's hand-in
+
+- **Class:** Tuesday 5 January 2027, 09:05–11:50 (150 minutes): quiz 10 + explanation/demo 15 + practical 100 + debrief 20 + evidence 5
+- **Everyone (60 points):** Tasks 0–3 on ports 8080/8081, your two controls in `student_task.py`, the checker before (`FAILED`) and after (`OK`), and your explanation
+- **This week odd ID = Conventional** (Part 2 + Part 4, 40) · **even ID = AIR-Sec** (Audit-the-AI 20 + EiPE 10 + Prompt 10)
+- **Code link:** commit `student_task.py` to branch `wk10` in your fork
+- **Due:** Monday 11 January 2027, 23:59 · worksheet PDF to learn.zcr.ai/submit
+- The demo `FLAG{...}` values are the same for everyone: paste them as evidence; nothing goes to ctf.zcr.ai
+- `X-User-Id` is a teaching stand-in for identity, not real authentication

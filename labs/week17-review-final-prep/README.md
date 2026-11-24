@@ -1,19 +1,17 @@
-# Week 17 — Reflection & Review (pre-Final)
+# Week 17 — Reflection and review
 
-No new content. Consolidate **Weeks 10–16** (with a quick callback to first-half core concepts) and prepare for the final (Weeks 18–19).
+**Software Security 2 (02005094) · Tuesday 23 February 2027, 09:05–11:50 (150 minutes) · Weeks 10–15, with first-half callbacks.** No new examinable content.
 
-## ✅ This week — what to do
-1. **Before class** — review **Weeks 10–16** (+ first-half callbacks).
-2. **In class (150 min)** — cumulative review quiz (`../../quizzes/quiz2.md`) → **Security Jeopardy: Champions** → **mock CTF** (`mock-ctf.md`) → debrief.
-3. **Prepare** — the **final is Weeks 18–19**.
+| Minutes | Activity |
+|---|---|
+| 0–30 | Cumulative review quiz on `learn.zcr.ai/quiz` (code given in class). Practice: [Quiz 2 practice questions](../../quizzes/quiz2.md) |
+| 30–50 | Selected Security Jeopardy clues; explain the reasoning |
+| 50–120 | Two practice checkpoints, 35 minutes each |
+| 120–145 | Compare controls, correct misunderstandings, plan revision |
+| 145–150 | Save evidence and a personal revision list |
 
-*Time breakdown: [AGENDA.md](../../AGENDA.md).*
+The review quiz counts in the usual Quiz/participation category; there is no extra worksheet or exam mark this week. The real review quiz uses different questions from the practice page. The lowest one regular weekly quiz is dropped. The practice checkpoints and the games give no marks. Game points (the leaderboard, bonus points for solving a clue first, and team House points) are only for fun and do not count toward your grade.
 
-## 🎯 Signature activity — "Security Jeopardy: Champions Edition"
-Whole-course quiz-show: API · memory safety · supply chain · cloud/container · AI/LLM · DevSecOps (plus first-half callbacks).
+**Before class:** make sure the Week 10 and Week 14 lab images still exist (`docker image ls | grep kosen-swsec`). If one is missing, go online, `cd` into that week's folder under `~/software-security/labs/` and run `docker compose build`.
 
-## 🧪 Mock Final CTF
-A practice CTF in the **exact format of Week 19** — mixed web/API/supply-chain/LLM/binary challenges. → **[mock-ctf.md](mock-ctf.md)** (with hints).
-
-## Covers
-Weeks 10–16: [API](../week10-api-security/), [memory safety](../week11-memory-safety-exploitation/), [supply chain](../week12-supply-chain/), [cloud/container](../week13-cloud-container/), [AI/LLM](../week14-ai-llm-security/), [DevSecOps](../week15-devsecops-pipeline/), [capstone studio](../week16-capstone/).
+[Practice checkpoints, step by step](mock-ctf.md). They start from a fresh practice copy, so your own Week 10 and Week 14 work is not changed. The final practical uses fixed criteria for analysis, correction and evidence; a flag alone does not earn full marks.

@@ -2,46 +2,54 @@
 marp: true
 theme: default
 paginate: true
-header: "Software Security · Week 18 · Final"
+header: "Software Security 2 · KOSEN 02005094 · Week 18 · Final"
 ---
 
-# Week 18
-## Final — Written Exam
-Cumulative · emphasis on Weeks 10–15
+# Week 18 — Final written examination
+## KOSEN 02005094
+Whole term, mostly Weeks 10–15; Week 16 adds no new exam content
 
-<!-- Proctor deck. Week 16 is the capstone studio — no new examinable content, don't imply it's in scope. Before start: confirm exam version (rotate from exams/item-bank.md final pool), time, open/closed-note, integrity (no AI/phones). Keep talk minimal once the clock runs. -->
+Date, time and room: announced by your instructor (final exam period 8–16 March 2027).
 
----
-
-## Format
-
-- Duration: **150 minutes** · 100 pts
-- Cumulative, emphasis Weeks 10–15 (Week 16 capstone is not separately examined)
-- 4 sections: A Modern-stack concepts (30) · B Spot the Vuln (20) · **C Applied (30)** · D Design & DevSecOps (20)
-
-<!-- State the section split exactly as printed. All 15 graded items map into the Weeks 10–15 block — this is closer to cumulative-in-name-only than a 60/40 split, say so if asked. -->
+<!-- Confirm the real exam paper, its matching key and the allowed aids before starting. This deck is KOSEN-specific; do not substitute it for MFU papers. -->
 
 ---
 
-## What's assessed
+## Format and time
 
-![A thin foundation band (Weeks 1-6, lighter weight) plus a wide emphasis band (Weeks 10-15, most of the exam weight: BOLA/mass-assignment/rate-limits, memory safety, SLSA/SBOM/Cosign, cloud IAM, prompt injection, DevSecOps gates) — Week 16 capstone isn't examinable. Section A (30, modern-stack concepts) and B (20, spot-the-vuln) test recall; C (30, applied design, no payload required) and D (20, pipeline/incident design) test design reasoning — 50/50. Unlike Week 8's midterm, which devoted 30 points to writing an actual SQL injection payload, Week 18 requires zero points of payload-writing: the shift is from writing exploits to designing fixes.](img/exam-blueprint-final.svg)
+- **150 minutes:** instructions 10 + writing and checking 130 + collection 10
+- **Ten questions × 10 marks = 100:** five Basic and five Technical
+- Suggested pace: 12 minutes per question = 120, plus 10 minutes to check = 130
+- Counts **10%** of the course: Basic 5% + Technical 5%
 
-<!-- BOLA/API is the one people under-revise — it's 20 of 100 points across three sections, not a single "spot the vuln" line. The recall-vs-design 50/50 split and the explicit contrast with Week 8 (no payloads here) are the two framing points worth saying out loud. Show briefly; exam day — don't teach. -->
-
----
-
-## Tips
-
-- Reason about design, not just single bugs
-- Always name the mitigation + where it belongs in the pipeline
-- Map every finding to **OWASP 2025 / API Security Top 10 / LLM Top 10 / CWE**
-
-<!-- Key score-saver for the final: it rewards DESIGN reasoning (where the fix belongs), not just bug-spotting — and don't drop "API" from the mapping list, BOLA is graded. Say once, then start. -->
+<!-- Instruction time is not extra writing time. The public practice paper is practice only; use the real paper and its matching key. -->
 
 ---
 
-# Good luck
-Week 19: capstone CTF tournament + project demos
+## What is assessed
 
-<!-- Close: remind W19 = team CTF + graded demos; bring runnable project + SBOM/signed artifact/pipeline. Grade with exams/week18-…-answers.md. -->
+- Basic: API checks, memory-safety protections, trusting software artifacts, cloud settings, and AI/tool risks
+- Technical: owner and field checks, Unicode and error handling, trusted-key verification, least-privilege policy, and output escaping / deny-on-error / safe logging
+
+Read the scenario or code on the paper. Explain how the problem works, how to fix it, which requests should work and which should be refused. Do not claim more than your evidence shows.
+
+---
+
+## Answering and checking
+
+- Answer all ten questions on the exam paper you receive
+- Use only the aids your instructor announces
+- State your assumptions; any correct, well-explained design earns marks
+- Keep the last 10 minutes to check all your answers
+
+<!-- No open-book or AI rule is invented here; publish the allowed aids before the exam. -->
+
+---
+
+## Collection and next session
+
+Stop writing when the 130 minutes end, and follow the invigilator's instructions.
+
+Week 19 is the team practical with four stations. The project report, code and a video of at most 5 minutes were due **Sunday 28 February 2027, 23:59**; project questions are answered in Weeks 16 and 20.
+
+[Practice paper](../labs/week18-final-written/exam.md)
